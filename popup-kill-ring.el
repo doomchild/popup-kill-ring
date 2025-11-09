@@ -1,11 +1,13 @@
-;;; popup-kill-ring.el --- interactively insert item from kill-ring
+;;; popup-kill-ring.el --- Interactively insert items from the kill-ring -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2010-2015  HAMANO Kiyoto
 
 ;; Author: HAMANO Kiyoto <khiker.mail+elisp@gmail.com>
-;; Keywords: popup, kill-ring, pos-tip
-;; Package-Requires: ((pos-tip "0.4.6") (popup "0.5.9"))
-;; Homepage: https://github.com/waymondo/popup-kill-ring
+;; Maintainer: Lee Crabtree <lee.crabtree@gmail.com>
+;; Keywords: convenience, popup, kill-ring, pos-tip
+;; Package-Requires: ((emacs "25.1") (pos-tip "0.4.6") (popup "0.5.9"))
+;; Homepage: https://github.com/doomchild/popup-kill-ring
+;; Package-Version: 1.0.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -161,12 +163,12 @@
 ;;; Variables:
 
 (defgroup popup-kill-ring nil
-  "interactively insert item from kill-ring"
+  "Interactively insert items from the `kill-ring'."
   :group  'convenience
   :prefix "popup-kill-ring-")
 
 (defconst popup-kill-ring-version "1.0.0"
-  "Version of `popup-kill-ring'")
+  "Version of `popup-kill-ring'.")
 
 (defcustom popup-kill-ring-popup-width 30
   "Width of popup item."
@@ -184,37 +186,27 @@
   :group 'popup-kill-ring)
 
 (defcustom popup-kill-ring-interactive-insert nil
-  "Non-nil means that insert selected item of `popup-menu*' interactively."
+  "Whether or not the currently selected entry should be previewed at `(point)`."
   :type 'boolean
   :group 'popup-kill-ring)
 
 (defcustom popup-kill-ring-isearch t
-  "Non-nil means that passes `t' to `isearch' option of `popup-menu*'"
+  "Whether or not the popup is searchable."
   :type 'boolean
   :group 'popup-kill-ring)
 
-(defcustom popup-kill-ring-item-min-width 3
-  "The number that shows minimum width of displaying `kill-ring' item
-of `popup-menu*'"
-  :type 'integer
-  :group 'popup-kill-ring)
-
 (defcustom popup-kill-ring-item-size-max nil
-  "The number that means max each item size of `popup-menu'.
-If item size is longer than this number, it's truncated.
-Nil means that item does not be truncate."
+  "The maximum length of an item shown in the popup.  Longer items will be truncated in the popup.  Nil disables truncation."
   :type 'integer
   :group 'popup-kill-ring)
 
 (defcustom popup-kill-ring-interactive-insert-face 'highlight
-  "The face for interactively inserted string when
-`popup-kill-ring-interactive-insert' is `t'."
+  "The face for the interactively inserted string when `popup-kill-ring-interactive-insert' is t."
   :type 'face
   :group 'popup-kill-ring)
 
 (defcustom popup-kill-ring-last-used-move-first t
-  "Non-nil means that last selected `kill-ring' item comes first of
-`kill-ring'."
+  "Whether or not 'kill-ring' entries should be shown last to first."
   :type 'boolean
   :group 'popup-kill-ring)
 
@@ -233,6 +225,7 @@ Nil means that item does not be truncate."
 
 
 (defun popup-kill-ring ()
+  "Show the 'kill-ring' popup."
   (interactive)
   (cond
    ((minibufferp)
@@ -255,17 +248,19 @@ Nil means that item does not be truncate."
           (when (and popup-kill-ring-interactive-insert
                      (numberp last-input-event)
                      (= last-input-event 7))
-            (popup-kill-ring--clear-interactive-insert)
-          ))))))
+            (popup-kill-ring--clear-interactive-insert)))))))
 
 (defun popup-kill-ring--get-current-popup ()
+  "Get the current popup instance."
   (seq-find (lambda (p) (eq (popup-symbol p) 'popup-kill-ring)) popup-instances))
 
 (defun popup-kill-ring--get-item (&optional offset)
+  "Get the currently selected popup item, with an optional OFFSET."
   (let ((current-popup (popup-kill-ring--get-current-popup)))
     (nth (+ (or offset 0) (popup-cursor current-popup)) current-popup)))
 
 (defun popup-kill-ring--convert-kill-ring ()
+  "Generate the list of items to show in the popup."
   (let ((index -1)
         (kring (if popup-kill-ring-last-used-move-first (reverse kill-ring) kill-ring)))
     (mapcar
@@ -289,6 +284,7 @@ Nil means that item does not be truncate."
      kring)))
 
 (defun popup-kill-ring-next ()
+  "Move to the next item in the 'kill-ring' popup."
   (interactive)
   (let* ((current-popup (popup-kill-ring--get-current-popup))
          (current-index (popup-cursor current-popup))
@@ -303,6 +299,7 @@ Nil means that item does not be truncate."
       (popup-next current-popup))))
 
 (defun popup-kill-ring-previous ()
+  "Move to the previous item in the 'kill-ring' popup."
   (interactive)
   (let* ((current-popup (popup-kill-ring--get-current-popup))
          (current-index (popup-cursor current-popup))
@@ -316,6 +313,7 @@ Nil means that item does not be truncate."
       (popup-previous current-popup))))
 
 (defun popup-kill-ring--interactive-insert-item (item)
+  "Interactively insert ITEM into the document."
   (let* ((start (point))
          (end (+ start (length item)))
          ol)
@@ -330,6 +328,7 @@ Nil means that item does not be truncate."
       (if ol (delete-overlay ol)))))
 
 (defun popup-kill-ring--clear-interactive-insert ()
+  "Clear the interactively inserted popup item."
   (when popup-kill-ring-interactive-insert
     (delete-region popup-kill-ring--interactive-region-start popup-kill-ring--interactive-region-end)
     (goto-char popup-kill-ring--interactive-region-start)))
