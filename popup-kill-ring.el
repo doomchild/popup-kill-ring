@@ -196,17 +196,17 @@
   :group 'popup-kill-ring)
 
 (defcustom popup-kill-ring-item-size-max nil
-  "The maximum length of an item shown in the popup.  Longer items will be truncated in the popup.  Nil disables truncation."
+  "The maximum length of an item shown in the popup.  Nil disables truncation."
   :type 'integer
   :group 'popup-kill-ring)
 
 (defcustom popup-kill-ring-interactive-insert-face 'highlight
-  "The face for the interactively inserted string when `popup-kill-ring-interactive-insert' is t."
+  "The face for the interactively inserted string."
   :type 'face
   :group 'popup-kill-ring)
 
 (defcustom popup-kill-ring-last-used-move-first t
-  "Whether or not 'kill-ring' entries should be shown last to first."
+  "Whether or not `kill-ring' entries should be shown last to first."
   :type 'boolean
   :group 'popup-kill-ring)
 
@@ -225,7 +225,7 @@
 
 
 (defun popup-kill-ring ()
-  "Show the 'kill-ring' popup."
+  "Show the `kill-ring' popup."
   (interactive)
   (cond
    ((minibufferp)
@@ -262,7 +262,8 @@
 (defun popup-kill-ring--convert-kill-ring ()
   "Generate the list of items to show in the popup."
   (let ((index -1)
-        (kring (if popup-kill-ring-last-used-move-first (reverse kill-ring) kill-ring)))
+        (kring (if popup-kill-ring-last-used-move-first (reverse kill-ring) kill-ring))
+        p-max)
     (mapcar
      (lambda (killed-item)
        (setq index (1+ index))
@@ -284,7 +285,7 @@
      kring)))
 
 (defun popup-kill-ring-next ()
-  "Move to the next item in the 'kill-ring' popup."
+  "Move to the next item in the `kill-ring' popup."
   (interactive)
   (let* ((current-popup (popup-kill-ring--get-current-popup))
          (current-index (popup-cursor current-popup))
@@ -292,22 +293,20 @@
          (next-index (if (>= (1+ current-index) max-index) max-index (1+ current-index))))
     (when (not (eq current-index next-index))
       (when popup-kill-ring-interactive-insert
-        (let ((current-item (nth current-index (popup-list current-popup)))
-              (next-item (nth next-index (popup-list current-popup))))
+        (let ((next-item (nth next-index (popup-list current-popup))))
           (popup-kill-ring--clear-interactive-insert)
           (popup-kill-ring--interactive-insert-item next-item)))
       (popup-next current-popup))))
 
 (defun popup-kill-ring-previous ()
-  "Move to the previous item in the 'kill-ring' popup."
+  "Move to the previous item in the `kill-ring` popup."
   (interactive)
   (let* ((current-popup (popup-kill-ring--get-current-popup))
          (current-index (popup-cursor current-popup))
          (prev-index (if (<= (1- current-index) 0) 0 (1- current-index))))
     (when (not (eq current-index prev-index))
       (when popup-kill-ring-interactive-insert
-        (let ((current-item (nth current-index (popup-list current-popup)))
-              (previous-item (nth prev-index (popup-list current-popup))))
+        (let ((previous-item (nth prev-index (popup-list current-popup))))
           (popup-kill-ring--clear-interactive-insert)
           (popup-kill-ring--interactive-insert-item previous-item)))
       (popup-previous current-popup))))
@@ -319,7 +318,7 @@
          ol)
     (setq popup-kill-ring--interactive-region-end end)
     (unwind-protect
-        (with-timeout (1.0 (if ol (delete-overlay)))
+        (with-timeout (1.0 (if ol (delete-overlay ol)))
           (insert item)
           (recenter)
           (setq ol (make-overlay start end))
