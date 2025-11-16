@@ -143,7 +143,7 @@
 ;;   set margin-right and width to `popup-menu*'.
 ;;
 ;; * 0.0.3
-;;   `pos-tip-show' argument `DY' to 0.
+;;   `pos-tip-show' argument 'DY' to 0.
 ;;
 ;; * 0.0.2
 ;;   `with-no-warnings' for variable `menu'.
